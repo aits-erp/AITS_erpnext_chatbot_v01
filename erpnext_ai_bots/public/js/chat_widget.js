@@ -2819,19 +2819,13 @@ erpnext_ai_bots.ChatWidget = class ChatWidget {
 //     }
 // });
 
-$(document).on("app_ready", async () => {
+$(document).on("app_ready", () => {
     if (frappe.session.user === "Guest") return;
 
-    try {
-        const r = await frappe.call({
-            method: "erpnext_ai_bots.guards.access.can_access_chatbot",
-            async: true,
-        });
-
-        if (r.message && r.message.allowed) {
-            erpnext_ai_bots.chat = new erpnext_ai_bots.ChatWidget();
-        }
-    } catch (e) {
-        // no access or server error: do not render chatbot
+    if (!frappe.boot || !frappe.boot.ai_bot_allowed) {
+        $(".ai-chat-launcher, .ai-chat-panel, .ai-chat-overlay, .ai-forward-modal, .ai-msg-context-menu").remove();
+        return;
     }
+
+    erpnext_ai_bots.chat = new erpnext_ai_bots.ChatWidget();
 });

@@ -9,6 +9,9 @@ app_email = "info@benchi.io"
 app_license = "MIT"
 required_apps = ["frappe", "erpnext"]
 
+
+boot_session = "erpnext_ai_bots.guards.access.boot_session"
+
 # JS/CSS includes in desk
 app_include_js = [
     "https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js",
