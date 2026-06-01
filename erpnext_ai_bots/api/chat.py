@@ -4,10 +4,12 @@ import frappe
 import json
 from frappe import _
 from erpnext_ai_bots.guards.rate_limiter import RateLimiter
+from erpnext_ai_bots.guards.access import require_ai_bot_access
 
 
 @frappe.whitelist()
 def upload_file(session_id: str = None):
+    require_ai_bot_access()
     """Upload a file and return its URL. Optionally attach to a session."""
     if not frappe.request.files:
         frappe.throw(_("No file uploaded"))
@@ -95,6 +97,7 @@ def _has_openai_token() -> bool:
 
 @frappe.whitelist()
 def get_companies():
+    require_ai_bot_access()
     """Get all companies the current user has read access to.
 
     System Managers and Administrators see every company. Other users see
@@ -124,6 +127,7 @@ def get_companies():
 
 @frappe.whitelist()
 def send_message(message: str, session_id: str = None, company: str = None, image_url: str = None):
+    require_ai_bot_access()
     """Main chat endpoint. Initiates agent processing.
 
     The response text is NOT returned in this HTTP response.
@@ -190,6 +194,7 @@ def send_message(message: str, session_id: str = None, company: str = None, imag
 @frappe.whitelist()
 def get_sessions(limit: int = 20, offset: int = 0):
     """Get the current user's chat sessions."""
+    require_ai_bot_access()
     return frappe.get_all(
         "AI Chat Session",
         filters={"user": frappe.session.user},
@@ -205,6 +210,7 @@ def get_sessions(limit: int = 20, offset: int = 0):
 
 @frappe.whitelist()
 def toggle_pin(session_id: str):
+    require_ai_bot_access()
     """Toggle the pinned state of a chat session."""
     session_user = frappe.db.get_value("AI Chat Session", session_id, "user")
     if session_user != frappe.session.user:
@@ -218,6 +224,7 @@ def toggle_pin(session_id: str):
 
 @frappe.whitelist()
 def get_history(session_id: str):
+    require_ai_bot_access()
     """Get full conversation history for a session."""
     user = frappe.session.user
     session = frappe.get_doc("AI Chat Session", session_id)
@@ -238,6 +245,7 @@ def get_history(session_id: str):
 
 @frappe.whitelist()
 def close_session(session_id: str):
+    require_ai_bot_access()
     """Close/archive a chat session."""
     session_user = frappe.db.get_value("AI Chat Session", session_id, "user")
     if session_user != frappe.session.user:
@@ -250,6 +258,7 @@ def close_session(session_id: str):
 
 @frappe.whitelist()
 def rename_session(session_id: str, title: str):
+    require_ai_bot_access()
     """Rename a chat session's title."""
     session_user = frappe.db.get_value("AI Chat Session", session_id, "user")
     if session_user != frappe.session.user:
@@ -266,6 +275,7 @@ def rename_session(session_id: str, title: str):
 
 @frappe.whitelist()
 def delete_session(session_id: str):
+    require_ai_bot_access()
     """Permanently delete a chat session and its linked audit logs."""
     session_user = frappe.db.get_value("AI Chat Session", session_id, "user")
     if session_user != frappe.session.user:
@@ -287,6 +297,7 @@ def delete_session(session_id: str):
 
 @frappe.whitelist()
 def categorize_session(session_id: str, category: str):
+    require_ai_bot_access()
     """Manually set the category for a chat session."""
     valid_categories = {"General", "Finance", "Sales", "Stock", "HR"}
     if category not in valid_categories:
@@ -303,6 +314,7 @@ def categorize_session(session_id: str, category: str):
 
 @frappe.whitelist()
 def confirm_action(action_type: str, doctype: str, name: str):
+    require_ai_bot_access()
     """Explicit confirmation endpoint for write actions."""
     if action_type == "submit":
         frappe.has_permission(doctype, doc=name, ptype="submit", throw=True)
@@ -355,6 +367,7 @@ def _extract_text_content(content) -> str:
 
 @frappe.whitelist()
 def export_session_html(session_id: str):
+    require_ai_bot_access()
     """Export a chat session as a self-contained HTML page suitable for printing / PDF.
 
     Returns the HTML string directly so the frontend can open it in a new tab
@@ -481,6 +494,7 @@ def export_session_csv(session_id: str):
     Sets frappe.response to trigger a file download in the browser.
     Columns: Timestamp, Role, Content.
     """
+    require_ai_bot_access()
     session, messages = _load_session_for_export(session_id)
 
     output = io.StringIO()

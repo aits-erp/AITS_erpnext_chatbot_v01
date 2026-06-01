@@ -1,10 +1,12 @@
 import frappe
 import json
 from frappe import _
+from erpnext_ai_bots.guards.access import require_ai_bot_access
 
 
 @frappe.whitelist()
 def get_company_users(company: str = None):
+    require_ai_bot_access()
     """Get users who have permission for a given company.
 
     Uses User Permission (allow=Company) to filter users.
@@ -86,6 +88,7 @@ def get_company_users(company: str = None):
 
 @frappe.whitelist()
 def forward_message(session_id: str, message_index: int, to_user: str, note: str = ""):
+    require_ai_bot_access()
     """Forward a message from an AI chat session to another user as a DM.
 
     Args:
@@ -166,6 +169,7 @@ def forward_message(session_id: str, message_index: int, to_user: str, note: str
 
 @frappe.whitelist()
 def send_dm(to_user: str, message: str, reply_to: str = None, company: str = None):
+    require_ai_bot_access()
     """Send a direct message to another user.
 
     Args:
@@ -219,6 +223,7 @@ def send_dm(to_user: str, message: str, reply_to: str = None, company: str = Non
 
 @frappe.whitelist()
 def get_dm_conversations(company: str = None):
+    require_ai_bot_access()
     """Get list of users the current user has DM conversations with.
 
     Returns a list of users with the latest message preview and unread count.
@@ -289,6 +294,7 @@ def get_dm_conversations(company: str = None):
 
 @frappe.whitelist()
 def get_dm_history(other_user: str, limit: int = 50, offset: int = 0):
+    require_ai_bot_access()
     """Get DM history between current user and another user."""
     user = frappe.session.user
     limit = min(int(limit), 100)
@@ -325,6 +331,7 @@ def get_dm_history(other_user: str, limit: int = 50, offset: int = 0):
 
 @frappe.whitelist()
 def mark_dm_read(other_user: str):
+    require_ai_bot_access()
     """Mark all DMs from other_user to current user as read."""
     user = frappe.session.user
     frappe.db.sql("""
@@ -338,6 +345,7 @@ def mark_dm_read(other_user: str):
 
 @frappe.whitelist()
 def get_unread_dm_count():
+    require_ai_bot_access()
     """Get total unread DM count for the current user."""
     user = frappe.session.user
     count = frappe.db.count(
@@ -349,6 +357,7 @@ def get_unread_dm_count():
 
 @frappe.whitelist()
 def get_ai_name():
+    require_ai_bot_access()
     """Get the configured AI assistant name."""
     try:
         name = frappe.db.get_single_value("AI Bot Settings", "ai_name")
@@ -359,6 +368,7 @@ def get_ai_name():
 
 @frappe.whitelist()
 def ask_ai_in_dm(question: str, to_user: str, company: str = None):
+    require_ai_bot_access()
     """Invoke the AI agent from within a DM conversation.
 
     The user types @ai <question> in a DM. This endpoint:
